@@ -1,0 +1,8 @@
+[AutoRun]
+icon=PLAYTREE\playtree.ico,0
+label=PLAYTREE PORTABLE USB
+shell\open=PLAYTREE\dist\PLAYTREE.exe
+shell\open\command=PLAYTREE\dist\PLAYTREE.exe
+shell\Play=Play PLAYTREE
+shell\Play\command=PLAYTREE\dist\PLAYTREE.exe
+shell\Explore=Open USB

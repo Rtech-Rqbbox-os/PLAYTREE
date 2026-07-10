@@ -1,0 +1,40 @@
+PLAYTREE — Chrome Web Store Listing
+=====================================
+Copy and paste this into the Chrome Web Store developer dashboard.
+
+SHORT DESCRIPTION (132 chars):
+Play PLAYTREE for free! Multiplayer fantasy adventure RPG with boss fights, 5 classes, base building, creature taming & crafting.
+
+DETAILED DESCRIPTION:
+PLAYTREE is a free-to-play multiplayer fantasy adventure RPG set in a vibrant pixel-art world. Awaken as a hero, rebuild the corrupted lands, and restore balance across 4 epic rounds.
+
+FEATURES:
+✓ 5 Unique Classes — Guardian, Ranger, Mage, Mechanic, Beast Tamer, Shadow Assassin
+✓ 4 Campaign Rounds — Each with unique bosses: Root Titan, Crystal Hydra, Sky Guardian, Hollow King
+✓ 8+ Unique Boss Fights — Each boss has multiple attack phases
+✓ Base Building — Construct and upgrade your own base with defenses and crafting stations
+✓ Creature Taming — Tame forest foxes, crystal dragons, mechanical owls, spirit wolves, and tree guardians
+✓ Deep Crafting System — 20+ recipes including weapons, potions, pet treats, and totems
+✓ Multiplayer — Host or join games with friends, real-time chat, shared worlds
+✓ Character Customization — Hats, auras, trails, body colors, titles, pet skins
+✓ Battle Pass — Complete challenges to unlock exclusive rewards
+✓ Weather System — Dynamic rain, snow, and fog affecting gameplay
+✓ Day/Night Cycle — Enemies change behavior based on time of day
+✓ Skill Trees — Unlock and upgrade class-specific abilities
+✓ Enchanting — Enhance weapons with fire, frost, lifesteal, and more
+✓ Fishing Minigame — Catch rare fish for gold and XP
+✓ Xbox Controller Support — Full gamepad support with on-screen button prompts
+✓ RHYSTECH Account System — Sign in, track progress, unlock achievements
+✓ Free to Play — No microtransactions, no pay-to-win
+
+PLATFORMS: Windows, Xbox One, Xbox Series X|S, Xbox Cloud Gaming
+DEVELOPER: RHYSTECH / RQBBOX GAME STUDIOS
+PUBLISHER: PLAYTREE GAMES
+RELEASE: Chapter 0 — Season 0
+
+CATEGORY: Games / Action / Adventure / RPG
+LANGUAGE: English
+PRICE: Free
+
+SEARCH KEYWORDS:
+playtree, playtree game, rhystech game, rqbbox, fantasy rpg, free game, multiplayer adventure, boss fights, indie game, pixel art game, action rpg, crafting game, base building, taming game, free pc game, windows game, xbox game, cloud gaming, adventure game 2026

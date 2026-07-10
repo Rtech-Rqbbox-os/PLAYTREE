@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "PLAYTREE — Fantasy Adventure RPG",
+  "version": "1.0.0",
+  "description": "Play PLAYTREE: a free multiplayer fantasy adventure RPG with epic boss fights, 5 classes, base building, creature taming, and crafting.",
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "PLAYTREE Game",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "author": "RHYSTECH",
+  "homepage_url": "https://playtree.game",
+  "short_name": "PLAYTREE",
+  "minimum_chrome_version": "88",
+  "offline_enabled": false,
+  "permissions": [],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

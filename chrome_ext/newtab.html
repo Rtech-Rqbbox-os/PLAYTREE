@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Tab</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#080c08;--bg2:#0d140d;--bg3:#105020;--green:#50ff78;--green2:#30c050;--gold:#ffd700;--txt:#d0f0d0;--txt2:#a0c0a0}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0}
+.content{position:relative;z-index:1;text-align:center;max-width:600px;padding:20px}
+.logo{font-size:4rem;font-weight:900;letter-spacing:8px;color:var(--green);text-shadow:0 0 40px rgba(80,255,120,.3);margin-bottom:4px}
+.subtitle{font-size:.9rem;color:var(--gold);letter-spacing:4px;margin-bottom:20px}
+.tagline{font-size:1.1rem;color:var(--txt2);margin-bottom:32px;font-style:italic}
+.stats{display:flex;gap:40px;justify-content:center;margin-bottom:32px}
+.stat{text-align:center}
+.stat-num{display:block;font-size:2rem;font-weight:900;color:var(--green);text-shadow:0 0 10px rgba(80,255,120,.4)}
+.stat-lbl{font-size:.7rem;color:var(--txt2);text-transform:uppercase;letter-spacing:2px}
+.btns{display:flex;gap:12px;justify-content:center;margin-bottom:24px}
+.btn{display:inline-block;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:700;font-size:.9rem;letter-spacing:2px;cursor:pointer;transition:all .3s;border:none}
+.btn-play{background:linear-gradient(135deg,var(--green2),#20a040);color:var(--bg)}
+.btn-play:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(80,255,120,.3)}
+.btn-outline{padding:11px 30px;background:transparent;color:var(--green);border:1px solid var(--green2)}
+.btn-outline:hover{background:var(--bg3);box-shadow:0 0 15px rgba(80,255,120,.2)}
+.search-bar{display:flex;gap:8px;max-width:500px;margin:0 auto 24px}
+.search-bar input{flex:1;padding:10px 16px;background:var(--bg2);border:1px solid var(--bg3);border-radius:6px;color:var(--txt);font-size:.9rem;outline:none}
+.search-bar input:focus{border-color:var(--green2)}
+.search-bar button{padding:10px 20px;background:var(--green2);border:none;border-radius:6px;color:var(--bg);cursor:pointer;font-weight:700}
+.quick-links{display:flex;gap:16px;margin-bottom:24px}
+.ql{color:var(--txt2);text-decoration:none;font-size:.8rem;padding:8px 16px;border-radius:6px;background:var(--bg2);border:1px solid var(--bg3);transition:all .2s}
+.ql:hover{color:var(--green);border-color:var(--green2);transform:translateY(-1px)}
+.footer{position:fixed;bottom:16px;font-size:.65rem;color:#507050;letter-spacing:1px;z-index:1}
+.tree{width:60px;height:80px;margin:0 auto 16px;position:relative}
+.tree-trunk{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:10px;height:30px;background:var(--green2);border-radius:3px}
+.tree-leaves{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);width:50px;height:50px;background:var(--green2);border-radius:50%;box-shadow:0 0 20px rgba(80,255,120,.3);animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1);opacity:.8}50%{transform:translateX(-50%) scale(1.1);opacity:1}}
+.favs{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
+.fav{width:80px;padding:10px;text-align:center;text-decoration:none;color:var(--txt2);font-size:.65rem;border-radius:8px;transition:all .2s}
+.fav:hover{background:var(--bg2);color:var(--txt)}
+.fav-icon{font-size:1.5rem;display:block;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div id="particles"></div>
+<div class="content">
+    <div class="tree"><div class="tree-leaves"></div><div class="tree-trunk"></div></div>
+    <div class="logo">PLAYTREE</div>
+    <div class="tagline">Awaken. Rebuild. Restore Balance.</div>
+
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search Google or type a URL..." autofocus>
+        <button id="searchBtn">Search</button>
+    </div>
+
+    <div class="favs">
+        <a href="#" class="fav" id="favGmail"><span class="fav-icon">&#9993;</span>Gmail</a>
+        <a href="#" class="fav" id="favYoutube"><span class="fav-icon">&#9654;</span>YouTube</a>
+        <a href="#" class="fav" id="favGithub"><span class="fav-icon">&#128190;</span>GitHub</a>
+        <a href="#" class="fav" id="favReddit"><span class="fav-icon">&#128172;</span>Reddit</a>
+        <a href="#" class="fav" id="favTwitter"><span class="fav-icon">&#120143;</span>X</a>
+        <a href="#" class="fav" id="favStore"><span class="fav-icon">&#127918;</span>PL Site</a>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><span class="stat-num">6</span><span class="stat-lbl">Classes</span></div>
+        <div class="stat"><span class="stat-num">4</span><span class="stat-lbl">Rounds</span></div>
+        <div class="stat"><span class="stat-num">8</span><span class="stat-lbl">Bosses</span></div>
+        <div class="stat"><span class="stat-num">Free</span><span class="stat-lbl">To Play</span></div>
+    </div>
+
+    <div class="btns">
+        <button class="btn btn-play" id="playBtn">&#9654; Play Now</button>
+        <button class="btn btn-outline" id="downloadBtn">&#8595; Download EXE</button>
+    </div>
+</div>
+<div class="footer">RHYSTECH &bull; RQBBOX GAME STUDIOS &bull; PLAYTREE GAMES &bull; 2026</div>
+
+<script>
+// Particles
+const c=document.getElementById('particles');
+for(let i=0;i<25;i++){
+    const p=document.createElement('div');
+    p.style.cssText=`position:absolute;width:${Math.random()*3+1}px;height:${Math.random()*3+1}px;background:rgba(80,255,120,${Math.random()*.3+.1});border-radius:50%;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:float ${Math.random()*12+10}s linear infinite;animation-delay:-${Math.random()*10}s`;
+    c.appendChild(p);
+}
+const s=document.createElement('style');
+s.textContent='@keyframes float{0%{transform:translateY(100vh)scale(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-10vh)scale(1);opacity:0}}';
+document.head.appendChild(s);
+
+// Search
+const si=document.getElementById('searchInput');
+document.getElementById('searchBtn').onclick=()=>{if(si.value)window.location='https://www.google.com/search?q='+encodeURIComponent(si.value)};
+si.onkeydown=e=>{if(e.key==='Enter'&&si.value)window.location='https://www.google.com/search?q='+encodeURIComponent(si.value)};
+si.focus();
+
+// Buttons
+document.getElementById('playBtn').onclick=()=>window.open('https://playtree.game');
+document.getElementById('downloadBtn').onclick=()=>window.open('https://playtree.game/#download');
+
+// Favorites
+const favs={
+    favGmail:'https://mail.google.com',favYoutube:'https://youtube.com',favGithub:'https://github.com',
+    favReddit:'https://reddit.com',favTwitter:'https://x.com',favStore:'https://playtree.game'
+};
+for(const[id,url]of Object.entries(favs))document.getElementById(id).onclick=e=>{e.preventDefault();window.location=url};
+</script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLAYTREE — Official Trailer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;height:100vh}
+canvas{display:block;max-width:100vw;max-height:100vh}
+#controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:10}
+button{background:rgba(80,255,120,0.15);border:1px solid #50ff78;color:#50ff78;padding:8px 20px;border-radius:4px;cursor:pointer;font-family:monospace;font-size:14px;transition:0.2s}
+button:hover{background:rgba(80,255,120,0.3)}
+#title-card{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;z-index:20;transition:opacity 1s}
+#title-card h1{font-family:monospace;color:#50ff78;font-size:72px;letter-spacing:12px;text-shadow:0 0 40px #50ff78,0 0 80px #30c050}
+#title-card p{font-family:monospace;color:#30c050;font-size:18px;margin-top:12px;letter-spacing:6px}
+#title-card .tagline{color:#2a8040;margin-top:24px;font-size:14px;letter-spacing:4px}
+#title-card .start-btn{margin-top:40px;padding:12px 32px;background:transparent;border:2px solid #50ff78;color:#50ff78;font-family:monospace;font-size:16px;cursor:pointer;border-radius:4px;transition:0.3s}
+#title-card .start-btn:hover{background:#50ff78;color:#000}
+</style>
+</head>
+<body>
+
+<div id="title-card">
+  <h1>PLAYTREE</h1>
+  <p>CHAPTER 0 — SEASON 0</p>
+  <div class="tagline">Awaken. Rebuild. Restore Balance.</div>
+  <button class="start-btn" id="play-btn">▶ PLAY TRAILER</button>
+</div>
+
+<canvas id="c"></canvas>
+
+<div id="controls" style="display:none">
+  <button id="restart-btn">↻ Restart</button>
+  <button id="pause-btn">⏸ Pause</button>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = 1280, H = 720;
+canvas.width = W; canvas.height = H;
+
+let paused = false;
+let time = 0;
+let particles = [];
+let started = false;
+let currentScene = 0;
+
+const scenes = [
+  { name:'forest', start:0, end:4, bg:'#0a1f0a', text:'THE FOREST AWAKENING', sub:'The corruption spreads...' },
+  { name:'combat', start:4, end:7.5, bg:'#1a0a1f', text:'EPIC COMBAT', sub:'5 Unique Classes' },
+  { name:'crystal', start:7.5, end:11, bg:'#0a1a2f', text:'CRYSTAL DEPTHS', sub:'A hydra stirs in the deep' },
+  { name:'boss1', start:11, end:14.5, bg:'#2f0a0a', text:'BOSS FIGHTS', sub:'Root Titan • Crystal Hydra' },
+  { name:'storm', start:14.5, end:18, bg:'#0a1a2f', text:'STORM PEAKS', sub:'The Sky Guardian awaits' },
+  { name:'multi', start:18, end:21, bg:'#1a1a0a', text:'MULTIPLAYER', sub:'Up to 8 players online' },
+  { name:'base', start:21, end:24, bg:'#0a1f15', text:'BASE BUILDING', sub:'Construct your stronghold' },
+  { name:'creatures', start:24, end:27, bg:'#1a0f1f', text:'CREATURE TAMING', sub:'Hatch eggs • Evolve companions' },
+  { name:'hollow', start:27, end:30, bg:'#0f0a1a', text:'THE HOLLOW THRONE', sub:'End the corruption' },
+  { name:'finale', start:30, end:35, bg:'#000', text:'PLAYTREE', sub:'Awaken. Rebuild. Restore Balance.' },
+];
+
+class Particle {
+  constructor(x,y,vx,vy,color,size,life){
+    this.x=x;this.y=y;this.vx=vx;this.vy=vy;
+    this.color=color;this.size=size;
+    this.life=life;this.maxLife=life;
+  }
+  update(dt){
+    this.x+=this.vx*dt; this.y+=this.vy*dt;
+    this.life-=dt;
+    this.vy+=20*dt;
+  }
+  draw(ctx){
+    let a=this.life/this.maxLife;
+    ctx.globalAlpha=a;
+    ctx.fillStyle=this.color;
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.size*a,0,Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha=1;
+  }
+}
+
+function spawnBurst(x,y,color,count=30){
+  for(let i=0;i<count;i++){
+    let ang=Math.random()*Math.PI*2;
+    let spd=40+Math.random()*120;
+    particles.push(new Particle(x,y,Math.cos(ang)*spd,Math.sin(ang)*spd-30,color,2+Math.random()*4,1+Math.random()*2));
+  }
+}
+
+function drawTree(ctx,x,y,scale,t){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(scale,scale);
+  // trunk
+  ctx.fillStyle='#3a2a1a';
+  ctx.fillRect(-6,-20,12,40);
+  ctx.fillStyle='#2a1a0a';
+  ctx.fillRect(-4,-20,8,40);
+  // leaves - pulsing
+  let pulse=1+Math.sin(t*2)*0.05;
+  let leafColor=`rgb(${80+Math.sin(t)*20},${180+Math.cos(t*1.5)*30},${60+Math.sin(t*0.8)*20})`;
+  ctx.fillStyle=leafColor;
+  ctx.beginPath();
+  ctx.arc(0,-28,22*pulse,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='#30c050';
+  ctx.beginPath();
+  ctx.arc(0,-32,14*pulse,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle='#50ff78';
+  ctx.beginPath();
+  ctx.arc(-2,-35,8*pulse,0,Math.PI*2);
+  ctx.fill();
+  // glow
+  ctx.shadowColor='#50ff78';
+  ctx.shadowBlur=30+Math.sin(t*3)*10;
+  ctx.fillStyle='rgba(80,255,120,0.1)';
+  ctx.beginPath();
+  ctx.arc(0,-28,35,0,Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.restore();
+}
+
+function drawCharacter(ctx,x,y,frame,t,color='#50ff78'){
+  ctx.save();
+  ctx.translate(x,y);
+  let bob=Math.sin(t*4)*2;
+  // body
+  ctx.fillStyle=color;
+  ctx.fillRect(-8,-16+bob,16,20);
+  // head
+  ctx.fillStyle='#f0d0a0';
+  ctx.beginPath();
+  ctx.arc(0,-22+bob,8,0,Math.PI*2);
+  ctx.fill();
+  // weapon glow
+  ctx.strokeStyle=color;
+  ctx.lineWidth=2;
+  ctx.shadowColor=color;
+  ctx.shadowBlur=10;
+  ctx.beginPath();
+  ctx.moveTo(10,-10+bob);
+  ctx.lineTo(18,-20+bob+Math.sin(t*6)*4);
+  ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.restore();
+}
+
+function drawBoss(ctx,x,y,type,t){
+  ctx.save();
+  ctx.translate(x,y);
+  let shake=Math.sin(t*12)*3;
+  ctx.translate(shake,0);
+  if(type==='titan'){
+    // Root Titan - large tree creature
+    ctx.fillStyle='#2a1a0a';
+    ctx.fillRect(-30,-40,60,50);
+    ctx.fillStyle='#4a3a2a';
+    ctx.fillRect(-25,-35,50,40);
+    // eyes
+    ctx.fillStyle='#ff3030';
+    ctx.beginPath();ctx.arc(-10,-25,5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(10,-25,5,0,Math.PI*2);ctx.fill();
+    // roots
+    ctx.strokeStyle='#3a2a1a';
+    ctx.lineWidth=4;
+    for(let i=0;i<5;i++){
+      let ang=-Math.PI/2+i*Math.PI/6+Math.sin(t+i)*0.2;
+      ctx.beginPath();
+      ctx.moveTo(0,10);
+      ctx.lineTo(Math.cos(ang)*50,10+Math.sin(ang)*30);
+      ctx.stroke();
+    }
+  } else if(type==='hydra'){
+    // Crystal Hydra
+    for(let i=0;i<3;i++){
+      let hx=(i-1)*25+Math.sin(t*2+i*2)*8;
+      let hy=-20+Math.cos(t*1.5+i)*5;
+      ctx.fillStyle=`hsl(${200+i*30},80%,${40+i*10}%)`;
+      ctx.beginPath();
+      ctx.arc(hx,hy,18,0,Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle='#fff';
+      ctx.beginPath();ctx.arc(hx-5,hy-5,3,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(hx+5,hy-5,3,0,Math.PI*2);ctx.fill();
+    }
+  } else if(type==='guardian'){
+    // Sky Guardian - winged creature
+    ctx.fillStyle='#c0c0e0';
+    ctx.beginPath();ctx.arc(0,-20,20,0,Math.PI*2);ctx.fill();
+    // wings
+    let wingAngle=Math.sin(t*3)*0.4;
+    ctx.save();ctx.rotate(-0.5+wingAngle);
+    ctx.fillStyle='#a0a0d0';
+    ctx.fillRect(-40,-35,35,12);
+    ctx.restore();
+    ctx.save();ctx.rotate(0.5-wingAngle);
+    ctx.fillStyle='#a0a0d0';
+    ctx.fillRect(5,-35,35,12);
+    ctx.restore();
+    ctx.fillStyle='#fff';
+    ctx.beginPath();ctx.arc(-7,-24,4,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(7,-24,4,0,Math.PI*2);ctx.fill();
+  } else {
+    // Hollow King
+    ctx.fillStyle='#1a0a2f';
+    ctx.beginPath();ctx.arc(0,-20,25,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#50ff78';
+    ctx.beginPath();ctx.arc(-8,-24,4,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(8,-24,4,0,Math.PI*2);ctx.fill();
+    // crown
+    ctx.fillStyle='#50ff78';
+    for(let i=0;i<5;i++){
+      let cx=-12+i*6;
+      ctx.beginPath();
+      ctx.moveTo(cx,-45);
+      ctx.lineTo(cx-3,-38);
+      ctx.lineTo(cx+3,-38);
+      ctx.fill();
+    }
+    // aura
+    ctx.strokeStyle='rgba(80,255,120,0.3)';
+    ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(0,-20,35+Math.sin(t*2)*5,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawForestBg(ctx,t){
+  // ground
+  ctx.fillStyle='#1a3a1a';
+  ctx.fillRect(0,H*0.65,W,H*0.35);
+  // trees background
+  for(let i=0;i<12;i++){
+    let tx=i*110+Math.sin(t*0.5+i)*10;
+    let ty=H*0.6;
+    drawTree(ctx,tx,ty,0.6+Math.sin(i)*0.2,t+i);
+  }
+}
+
+function drawCrystalBg(ctx,t){
+  ctx.fillStyle='#0a1a2f';
+  ctx.fillRect(0,0,W,H);
+  for(let i=0;i<20;i++){
+    let cx=(i*70+Math.sin(t*0.3+i*1.5)*20)%W;
+    let cy=100+Math.sin(t*0.5+i)*80;
+    ctx.fillStyle=`hsla(${200+i*15},60%,50%,${0.1+Math.sin(t+i)*0.05})`;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy-30);
+    ctx.lineTo(cx-10,cy);
+    ctx.lineTo(cx+10,cy);
+    ctx.fill();
+  }
+}
+
+function drawStormBg(ctx,t){
+  ctx.fillStyle='#0a1a2f';
+  ctx.fillRect(0,0,W,H);
+  // clouds
+  for(let i=0;i<8;i++){
+    let cx=(i*170+t*30)%W;
+    let cy=80+Math.sin(t*0.4+i)*40;
+    ctx.fillStyle=`rgba(100,120,160,${0.3+Math.sin(t+i)*0.1})`;
+    ctx.beginPath();
+    ctx.ellipse(cx,cy,60,20,0,0,Math.PI*2);
+    ctx.fill();
+  }
+  // lightning
+  if(Math.random()<0.02){
+    spawnBurst(Math.random()*W,100,'#c0c0ff',10);
+  }
+}
+
+function drawCityBg(ctx,t){
+  ctx.fillStyle='#0a1f15';
+  ctx.fillRect(0,H*0.6,W,H*0.4);
+  for(let i=0;i<10;i++){
+    let bx=i*130+20;
+    let bh=40+Math.sin(i*2)*20;
+    let by=H*0.6-bh;
+    ctx.fillStyle=`hsl(140,20%,${15+Math.sin(i)*5}%)`;
+    ctx.fillRect(bx,by,60,bh);
+    // window glow
+    for(let w=0;w<3;w++){
+      ctx.fillStyle=`rgba(80,255,120,${0.2+Math.sin(t*2+i+w)*0.1})`;
+      ctx.fillRect(bx+8+w*18,by+8,10,12);
+    }
+  }
+}
+
+function drawCreatureEggs(ctx,t){
+  for(let i=0;i<5;i++){
+    let ex=200+i*180;
+    let ey=H*0.55+Math.sin(t*1.5+i)*8;
+    let colors=['#50ff78','#ff7050','#70a0ff','#ffa050','#c070ff'];
+    ctx.fillStyle=colors[i];
+    ctx.beginPath();
+    ctx.ellipse(ex,ey,16,22,0,0,Math.PI*2);
+    ctx.fill();
+    // crack glow
+    if(Math.sin(t*3+i)>0.7){
+      ctx.strokeStyle='#fff';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(ex-5,ey-5);ctx.lineTo(ex+3,ey+5);ctx.lineTo(ex-2,ey+8);
+      ctx.stroke();
+    }
+  }
+}
+
+function getScene(t){
+  for(let s of scenes){
+    if(t>=s.start && t<s.end) return s;
+  }
+  return scenes[scenes.length-1];
+}
+
+function drawText(ctx,text,sub,t,sceneTime){
+  let fadeIn=Math.min(sceneTime/0.5,1);
+  let fadeOut=Math.min((scenes[getScene(time).end]-time)/0.5,1);
+  let alpha=fadeIn*fadeOut;
+  ctx.globalAlpha=alpha;
+  // main text
+  ctx.fillStyle='#50ff78';
+  ctx.font='bold 48px monospace';
+  ctx.textAlign='center';
+  ctx.shadowColor='#50ff78';
+  ctx.shadowBlur=20;
+  ctx.fillText(text,W/2,H/2-20);
+  ctx.shadowBlur=0;
+  // sub text
+  ctx.fillStyle='#30c050';
+  ctx.font='20px monospace';
+  ctx.fillText(sub,W/2,H/2+20);
+  ctx.globalAlpha=1;
+}
+
+function drawFinale(ctx,t){
+  let scene=t-30;
+  // particles convergence
+  if(scene<3){
+    for(let i=0;i<40;i++){
+      let ang=t*2+i*Math.PI*2/40;
+      let r=300-scene*60+Math.sin(t*3+i)*20;
+      let px=W/2+Math.cos(ang)*r;
+      let py=H/2+Math.sin(ang)*r;
+      ctx.fillStyle=`hsla(${120+i*5},100%,60%,${0.5+Math.sin(t*2+i)*0.3})`;
+      ctx.beginPath();
+      ctx.arc(px,py,3,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+  // final tree
+  if(scene>2){
+    let treeAlpha=Math.min((scene-2)/1,1);
+    ctx.globalAlpha=treeAlpha;
+    drawTree(ctx,W/2,H/2+40,3,t);
+    ctx.globalAlpha=1;
+    // title
+    let titleAlpha=Math.min((scene-2.5)/1,1);
+    ctx.globalAlpha=titleAlpha;
+    ctx.fillStyle='#50ff78';
+    ctx.font='bold 64px monospace';
+    ctx.textAlign='center';
+    ctx.shadowColor='#50ff78';
+    ctx.shadowBlur=30;
+    ctx.fillText('PLAYTREE',W/2,H/2-100);
+    ctx.shadowBlur=0;
+    ctx.fillStyle='#30c050';
+    ctx.font='18px monospace';
+    ctx.fillText('Awaken. Rebuild. Restore Balance.',W/2,H/2-60);
+    ctx.font='14px monospace';
+    ctx.fillStyle='#2a8040';
+    ctx.fillText('Free to Play • Coming Soon',W/2,H/2+120);
+    ctx.globalAlpha=1;
+  }
+}
+
+let lastT=0;
+let firstFrame=true;
+function loop(ts){
+  if(!started) return;
+  if(firstFrame){lastT=ts;firstFrame=false}
+  if(!paused){
+    let dt=(ts-lastT)/1000;
+    dt=Math.min(dt,0.05);
+    lastT=ts;
+    time+=dt;
+  }
+  lastT=ts;
+
+  if(time>=35){
+    time=35;
+    document.getElementById('controls').style.display='flex';
+  }
+
+  let scene=getScene(time);
+  let sceneTime=time-scene.start;
+
+  // clear
+  ctx.fillStyle=scene.bg;
+  ctx.fillRect(0,0,W,H);
+
+  // scene backgrounds
+  if(scene.name==='forest'||scene.name==='boss1'){
+    drawForestBg(ctx,time);
+  } else if(scene.name==='crystal'){
+    drawCrystalBg(ctx,time);
+  } else if(scene.name==='storm'){
+    drawStormBg(ctx,time);
+  } else if(scene.name==='base'){
+    drawCityBg(ctx,time);
+  } else if(scene.name==='creatures'){
+    drawCrystalBg(ctx,time);
+    drawCreatureEggs(ctx,time);
+  } else if(scene.name==='hollow'){
+    drawForestBg(ctx,time);
+    drawStormBg(ctx,time);
+  } else if(scene.name==='combat'){
+    drawForestBg(ctx,time);
+  } else if(scene.name==='multi'){
+    drawCityBg(ctx,time);
+  }
+
+  // characters & bosses
+  if(scene.name==='forest'||scene.name==='combat'){
+    drawCharacter(ctx,300,H*0.55,0,time);
+    drawCharacter(ctx,380,H*0.58,1,time,'#70a0ff');
+    if(scene.name==='combat'){
+      // enemies
+      for(let i=0;i<3;i++){
+        let ex=700+i*60+Math.sin(time*2+i)*10;
+        ctx.fillStyle='#8a3a3a';
+        ctx.beginPath();
+        ctx.arc(ex,H*0.55,12,0,Math.PI*2);
+        ctx.fill();
+      }
+    }
+  }
+  if(scene.name==='boss1'){
+    drawBoss(ctx,W*0.7,H*0.45,'titan',time);
+    drawCharacter(ctx,W*0.3,H*0.55,0,time);
+    drawCharacter(ctx,W*0.25,H*0.58,1,time,'#70a0ff');
+  }
+  if(scene.name==='crystal'){
+    drawBoss(ctx,W*0.65,H*0.45,'hydra',time);
+    drawCharacter(ctx,W*0.3,H*0.55,0,time);
+  }
+  if(scene.name==='storm'){
+    drawBoss(ctx,W*0.6,H*0.35,'guardian',time);
+    drawCharacter(ctx,W*0.35,H*0.55,0,time);
+  }
+  if(scene.name==='hollow'){
+    drawBoss(ctx,W*0.6,H*0.4,'hollow',time);
+    drawCharacter(ctx,W*0.3,H*0.55,0,time);
+    drawCharacter(ctx,W*0.25,H*0.58,1,time,'#ff7050');
+    drawCharacter(ctx,W*0.35,H*0.6,2,time,'#c070ff');
+  }
+  if(scene.name==='multi'){
+    let colors=['#50ff78','#70a0ff','#ff7050','#ffa050','#c070ff','#ff50a0','#50c0ff','#a0ff50'];
+    for(let i=0;i<8;i++){
+      drawCharacter(ctx,200+i*100,H*0.5+Math.sin(time+i)*10,i,colors[i%8]);
+    }
+  }
+
+  // text overlay
+  drawText(ctx,scene.text,scene.sub,time,sceneTime);
+
+  // finale
+  if(scene.name==='finale'){
+    drawFinale(ctx,time);
+  }
+
+  // particles
+  for(let i=particles.length-1;i>=0;i--){
+    particles[i].update(paused?0:0.016);
+    particles[i].draw(ctx);
+    if(particles[i].life<=0) particles.splice(i,1);
+  }
+
+  // ambient particles
+  if(Math.random()<0.1){
+    particles.push(new Particle(
+      Math.random()*W,H+10,
+      (Math.random()-0.5)*20,-30-Math.random()*40,
+      `hsla(${120+Math.random()*40},100%,60%,0.6)`,
+      1+Math.random()*2,3+Math.random()*3
+    ));
+  }
+
+  // letterbox bars
+  ctx.fillStyle='#000';
+  ctx.fillRect(0,0,W,30);
+  ctx.fillRect(0,H-30,W,30);
+
+  // progress bar
+  if(time<35){
+    let progress=time/35;
+    ctx.fillStyle='rgba(80,255,120,0.2)';
+    ctx.fillRect(60,H-25,W-120,4);
+    ctx.fillStyle='#50ff78';
+    ctx.fillRect(60,H-25,(W-120)*progress,4);
+  }
+
+  requestAnimationFrame(loop);
+}
+
+document.getElementById('play-btn').addEventListener('click',()=>{
+  document.getElementById('title-card').style.opacity='0';
+  setTimeout(()=>{
+    document.getElementById('title-card').style.display='none';
+    document.getElementById('controls').style.display='flex';
+    started=true;
+    lastT=performance.now();
+    requestAnimationFrame(loop);
+  },1000);
+});
+
+document.getElementById('restart-btn').addEventListener('click',()=>{
+  time=0;
+  particles=[];
+  firstFrame=true;
+  document.getElementById('controls').style.display='flex';
+});
+
+document.getElementById('pause-btn').addEventListener('click',()=>{
+  paused=!paused;
+  document.getElementById('pause-btn').textContent=paused?'▶ Play':'⏸ Pause';
+});
+</script>
+</body>
+</html>

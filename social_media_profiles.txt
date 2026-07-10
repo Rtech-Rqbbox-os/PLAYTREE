@@ -1,0 +1,68 @@
+# PLAYTREE — Social Media Profiles
+# Copy-paste these into each platform
+
+============================================
+TWITTER / X PROFILE
+============================================
+Display Name: PLAYTREE
+Username: @playtreegame
+Bio: Awaken. Rebuild. Restore Balance. 🌳
+Free multiplayer fantasy RPG
+6 classes | 8 bosses | Base building | Taming
+Download: playtree.game
+Location: 🌍 Worldwide
+============================================
+
+============================================
+INSTAGRAM
+============================================
+Username: playtreegame
+Name: PLAYTREE
+Bio: 🌳 Awaken. Rebuild. Restore Balance.
+Free multiplayer fantasy RPG
+⚔ 6 Classes | 🏰 Base Building | 🐉 Creature Taming
+🎮 Play FREE → playtree.game
+============================================
+
+============================================
+YOUTUBE CHANNEL
+============================================
+Name: PLAYTREE
+Handle: @playtreegame
+Description: Official PLAYTREE channel.
+Free multiplayer fantasy RPG by RHYSTECH.
+Gameplay, trailers, boss fights, tips & guides.
+Download free: playtree.game
+============================================
+
+============================================
+ITCH.IO PAGE
+============================================
+Title: PLAYTREE
+URL: playtreegame.itch.io
+Short description: Free multiplayer fantasy RPG with boss fights, base building, creature taming
+Full description: (copy from README above)
+Tags: rpg, multiplayer, fantasy, adventure, free, pixel-art, action, base-building, boss-fight
+============================================
+
+============================================
+REDDIT POST
+============================================
+Subreddit: r/indiegaming or r/games or r/rpg
+Title: I made PLAYTREE — a free multiplayer fantasy RPG with 4 rounds, 8 boss fights, base building, and creature taming
+Body: Hey everyone! I'm a solo dev working on PLAYTREE, a free-to-play fantasy adventure RPG.
+
+Features:
+- 6 classes (Guardian, Ranger, Mage, Mechanic, Beast Tamer, Shadow Assassin)
+- 4 campaign rounds with unique bosses
+- Base building & crafting
+- Creature taming with evolution
+- Multiplayer with real-time chat
+- Full Xbox controller support
+- Skill trees & enchanting
+- Weather system & day/night cycle
+
+Download: playtree.game
+
+Would love feedback!
+============================================
