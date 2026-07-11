@@ -123,6 +123,22 @@ class RhystechAccount:
         self.save_session()
         self.state = "login"
 
+    def auto_login_guest(self):
+        guest_email = "guest@playtree.local"
+        if guest_email not in self.accounts:
+            self.accounts[guest_email] = {
+                "name": "Guest",
+                "email": guest_email,
+                "password": self.hash_password("guest"),
+                "created": time.strftime("%Y-%m-%d"),
+                "hours": 0,
+                "rounds": 0,
+                "bosses": 0,
+            }
+            self.save_accounts()
+        self.current_user = guest_email
+        self.save_session()
+
     def get_user_data(self):
         if self.current_user and self.current_user in self.accounts:
             return self.accounts[self.current_user]

@@ -23,8 +23,7 @@ android.sdk = 33
 android.accept_sdk_license = True
 android.arch = arm64-v8a
 
-# Android TV
-android.tv = 1
+# Back key
 android.back_key = Back
 
 # Orientation

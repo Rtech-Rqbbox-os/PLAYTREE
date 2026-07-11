@@ -1,7 +1,8 @@
 import pygame
 import os
 import sys
-import subprocess
+
+IS_MOBILE = sys.platform in ("android", "ios") or hasattr(sys, "getandroidapilevel")
 
 TV_KEYWORDS = [
     "eko home tv", "eko tv", "google tv", "android tv", "apple tv",
@@ -11,10 +12,16 @@ TV_KEYWORDS = [
 ]
 
 def detect_tv_mode():
+    if IS_MOBILE:
+        if sys.platform == "android" or hasattr(sys, "getandroidapilevel"):
+            return True
+        return False
+
     if sys.platform != "win32":
         return False
 
     try:
+        import subprocess
         result = subprocess.run(
             ["wmic", "desktopmonitor", "get", "name"],
             capture_output=True, timeout=5, creationflags=0x08000000
@@ -27,6 +34,7 @@ def detect_tv_mode():
         pass
 
     try:
+        import subprocess
         result = subprocess.run(
             ["powershell", "-Command",
              "Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name"],
@@ -62,10 +70,26 @@ def get_tv_info():
         "controller_only": False,
     }
 
+    if IS_MOBILE:
+        info["is_tv"] = True
+        if sys.platform == "android" or hasattr(sys, "getandroidapilevel"):
+            info["tv_type"] = "Android Device"
+        elif sys.platform == "ios":
+            info["tv_type"] = "iOS Device"
+        try:
+            info_obj = pygame.display.Info()
+            w, h = info_obj.current_w, info_obj.current_h
+            info["resolution"] = f"{w}x{h}"
+            info["overscan补偿"] = 0.0
+        except Exception:
+            pass
+        return info
+
     info["is_tv"] = detect_tv_mode()
 
-    if info["is_tv"]:
+    if info["is_tv"] and sys.platform == "win32":
         try:
+            import subprocess
             result = subprocess.run(
                 ["powershell", "-Command",
                  "Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name"],
@@ -94,21 +118,21 @@ def get_tv_info():
                     info["tv_type"] = tv_type
                     break
 
-        try:
-            info_obj = pygame.display.Info()
-            w, h = info_obj.current_w, info_obj.current_h
-            info["resolution"] = f"{w}x{h}"
-            if w <= 1280 and h <= 720:
-                info["overscan补偿"] = 0.0
-            else:
-                info["overscan补偿"] = 0.04
-        except Exception:
-            pass
+    try:
+        info_obj = pygame.display.Info()
+        w, h = info_obj.current_w, info_obj.current_h
+        info["resolution"] = f"{w}x{h}"
+        if w <= 1280 and h <= 720:
+            info["overscan补偿"] = 0.0
+        else:
+            info["overscan补偿"] = 0.04
+    except Exception:
+        pass
 
-        try:
-            info["controller_only"] = pygame.joystick.get_count() > 0
-        except Exception:
-            pass
+    try:
+        info["controller_only"] = pygame.joystick.get_count() > 0
+    except Exception:
+        pass
 
     return info
 

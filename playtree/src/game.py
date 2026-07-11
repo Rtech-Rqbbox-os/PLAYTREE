@@ -58,7 +58,14 @@ class Game:
         )
         self.particles = ParticleSystem()
         self.account = RhystechAccount()
-        self.state = GameState.LOGIN if not self.account.current_user else GameState.MAIN_MENU
+
+        _is_mobile = sys.platform in ("android", "ios") or hasattr(sys, "getandroidapilevel")
+        if _is_mobile:
+            if not self.account.current_user:
+                self.account.auto_login_guest()
+            self.state = GameState.MAIN_MENU
+        else:
+            self.state = GameState.LOGIN if not self.account.current_user else GameState.MAIN_MENU
         self.main_menu = MainMenu(screen, has_save=has_save())
         self.main_menu.audio = self.audio
         self.season = SeasonSystem()
@@ -254,6 +261,10 @@ class Game:
 
         # Studio splash
         self.studio_splash = SplashScreen()
+        _is_mobile = sys.platform in ("android", "ios") or hasattr(sys, "getandroidapilevel")
+        if _is_mobile:
+            self.studio_splash.timer = 7.0
+            self.studio_splash.done = True
 
         # Menu music
         self.menu_music_playing = False
@@ -490,7 +501,42 @@ class Game:
         self.message = text
         self.message_timer = duration
 
+    def _convert_finger_to_mouse(self, events):
+        converted = []
+        for event in events:
+            if event.type == pygame.FINGERDOWN:
+                surf = pygame.display.get_surface()
+                w = surf.get_width() if surf else WIDTH
+                h = surf.get_height() if surf else HEIGHT
+                mx = int(event.x * w)
+                my = int(event.y * h)
+                synth = pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=(mx, my))
+                converted.append(event)
+                converted.append(synth)
+            elif event.type == pygame.FINGERUP:
+                surf = pygame.display.get_surface()
+                w = surf.get_width() if surf else WIDTH
+                h = surf.get_height() if surf else HEIGHT
+                mx = int(event.x * w)
+                my = int(event.y * h)
+                synth = pygame.event.Event(pygame.MOUSEBUTTONUP, button=1, pos=(mx, my))
+                converted.append(event)
+                converted.append(synth)
+            elif event.type == pygame.FINGERMOTION:
+                surf = pygame.display.get_surface()
+                w = surf.get_width() if surf else WIDTH
+                h = surf.get_height() if surf else HEIGHT
+                mx = int(event.x * w)
+                my = int(event.y * h)
+                synth = pygame.event.Event(pygame.MOUSEMOTION, pos=(mx, my), rel=(0, 0), buttons=(1, 0, 0))
+                converted.append(event)
+                converted.append(synth)
+            else:
+                converted.append(event)
+        return converted
+
     def handle_events(self, events):
+        events = self._convert_finger_to_mouse(events)
         for event in events:
             if event.type == pygame.QUIT:
                 self.running = False
@@ -617,11 +663,21 @@ class Game:
                         self.round_boss_defeated = False
                         rd = self.round_data.get(self.current_round, {})
                         self.show_message(f"Round {self.current_round}: {rd.get('name', 'Unknown')}", 3)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.round_intro_timer > 1:
+                        self.state = GameState.PLAYING
+                        self.round_active = True
+                        self.round_enemies_killed = 0
+                        self.round_boss_spawned = False
+                        self.round_boss_defeated = False
+                        self.audio.play("menu_confirm")
 
             elif self.state == GameState.END_CREDITS:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and self.credits_timer > 3:
                     self.state = GameState.MAIN_MENU
                 elif event.type == pygame.JOYBUTTONDOWN and self.credits_timer > 3:
+                    self.state = GameState.MAIN_MENU
+                elif event.type == pygame.MOUSEBUTTONDOWN and self.credits_timer > 3:
                     self.state = GameState.MAIN_MENU
 
             elif self.state == GameState.GAME_OVER:
@@ -632,6 +688,9 @@ class Game:
                     if event.button == 0:  # A
                         self.state = GameState.MAIN_MENU
                         self.audio.play("menu_confirm")
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    self.state = GameState.MAIN_MENU
+                    self.audio.play("menu_confirm")
 
             elif self.state == GameState.SETTINGS:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -668,6 +727,26 @@ class Game:
                 self.state = GameState.MAIN_MENU
             elif self.typing_name and event.unicode.isprintable() and len(self.name_input) < 16:
                 self.name_input += event.unicode
+
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mx, my = event.pos
+            if my < 480:
+                if mx < WIDTH // 2:
+                    self.selected_class = (self.selected_class - 1) % len(self.class_cycle)
+                    self.audio.play("menu_hover")
+                else:
+                    self.selected_class = (self.selected_class + 1) % len(self.class_cycle)
+                    self.audio.play("menu_hover")
+            elif 550 <= my <= 600:
+                self.typing_name = True
+                self.state = GameState.CHARACTER_CREATE
+            elif 510 <= my <= 545:
+                if self.name_input.strip():
+                    self.character_name = self.name_input.strip()
+                self.audio.play("menu_confirm")
+                self.start_new_game()
+            elif my > HEIGHT - 40 and mx < 150:
+                self.state = GameState.MAIN_MENU
 
     def _handle_gameplay(self, event):
         if event.type == pygame.KEYDOWN:
@@ -1302,7 +1381,7 @@ class Game:
                                    HEIGHT//2 + int(math.sin(self.player.facing) * 100))
                     self.player._attack(mouse_pos_t, self.camera_x, self.camera_y)
                     self.audio.play("attack")
-                if self.touch_controls.dodge_btn.is_pressed():
+                if self.touch_controls.dodge_btn.just_pressed():
                     if self.player.dodge_cooldown <= 0 and not self.player.dodging and self.player.energy >= 10:
                         self.player.dodging = True
                         self.player.dodge_timer = 0.3
@@ -1310,24 +1389,24 @@ class Game:
                         self.player.invincible = 0.3
                         self.player.energy -= 10
                         self.audio.play("dodge")
-                if self.touch_controls.special_btn.is_pressed():
+                if self.touch_controls.special_btn.just_pressed():
                     self._use_skill("special")
                     self.audio.play("controller_btn")
-                if self.touch_controls.interact_btn.is_pressed():
+                if self.touch_controls.interact_btn.just_pressed():
                     self._try_interact()
-                if self.touch_controls.potion_btn.is_pressed():
+                if self.touch_controls.potion_btn.just_pressed():
                     self._use_health_potion()
                     self.audio.play("controller_btn")
-                if self.touch_controls.inventory_btn.is_pressed():
+                if self.touch_controls.inventory_btn.just_pressed():
                     self.inventory_open = not self.inventory_open
                     self.audio.play("tab_switch")
-                if self.touch_controls.craft_btn.is_pressed():
+                if self.touch_controls.craft_btn.just_pressed():
                     self.crafting_open = not self.crafting_open
                     self.audio.play("tab_switch")
-                if self.touch_controls.mount_btn.is_pressed():
+                if self.touch_controls.mount_btn.just_pressed():
                     self._try_mount()
                     self.audio.play("controller_btn")
-                if self.touch_controls.menu_btn.is_pressed():
+                if self.touch_controls.menu_btn.just_pressed():
                     self.state = GameState.PAUSED
                     self.audio.play("menu_select")
 

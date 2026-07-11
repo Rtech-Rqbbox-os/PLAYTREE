@@ -27,19 +27,14 @@ def is_mobile():
     return False
 
 def main():
+    if is_mobile():
+        os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()
     pygame.font.init()
-    pygame.joystick.init()
-
-    import os
-    version_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "version.json")
-    if not os.path.exists(version_path):
-        try:
-            import json
-            with open(version_path, "w") as f:
-                json.dump({"version": "1.0.0", "build_time": 1750000000}, f)
-        except Exception:
-            pass
+    try:
+        pygame.joystick.init()
+    except Exception:
+        pass
 
     saved_settings = None
     try:
@@ -52,37 +47,37 @@ def main():
     if saved_settings and "fullscreen" in saved_settings:
         is_fullscreen = saved_settings["fullscreen"]
 
-    # Always create the display window
     if is_mobile():
         try:
             info = pygame.display.Info()
             monitor_w, monitor_h = info.current_w, info.current_h
         except Exception:
-            monitor_w, monitor_h = 1200, 800
-        flags = pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF
+            monitor_w, monitor_h = WIDTH, HEIGHT
         try:
-            display = pygame.display.set_mode((monitor_w, monitor_h), flags)
+            display = pygame.display.set_mode((monitor_w, monitor_h), pygame.FULLSCREEN)
         except Exception:
-            display = pygame.display.set_mode((WIDTH, HEIGHT))
+            try:
+                display = pygame.display.set_mode((0, 0))
+            except Exception:
+                display = pygame.display.set_mode((WIDTH, HEIGHT))
     elif is_fullscreen:
         try:
             info = pygame.display.Info()
             monitor_w, monitor_h = info.current_w, info.current_h
         except Exception:
             monitor_w, monitor_h = 1920, 1080
-        flags = pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF
+        flags = pygame.FULLSCREEN | pygame.DOUBLEBUF
         try:
             display = pygame.display.set_mode((monitor_w, monitor_h), flags)
         except Exception:
             display = pygame.display.set_mode((WIDTH, HEIGHT))
     else:
-        flags = pygame.HWSURFACE | pygame.DOUBLEBUF
+        flags = pygame.DOUBLEBUF
         display = pygame.display.set_mode((WIDTH, HEIGHT), flags)
 
     pygame.display.set_caption(TITLE)
     pygame.mouse.set_visible(not is_mobile())
 
-    # Render surface is always the game's logical size
     render_surface = pygame.Surface((WIDTH, HEIGHT))
 
     try:
@@ -106,7 +101,7 @@ def main():
         for event in events:
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
+            if not is_mobile() and event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
                 is_fullscreen = not is_fullscreen
                 try:
                     info = pygame.display.Info()
@@ -114,20 +109,19 @@ def main():
                 except Exception:
                     monitor_w, monitor_h = 1920, 1080
                 if is_fullscreen:
-                    flags = pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF
+                    flags = pygame.FULLSCREEN | pygame.DOUBLEBUF
                     try:
                         display = pygame.display.set_mode((monitor_w, monitor_h), flags)
                     except Exception:
                         display = pygame.display.set_mode((WIDTH, HEIGHT))
                 else:
-                    flags = pygame.HWSURFACE | pygame.DOUBLEBUF
+                    flags = pygame.DOUBLEBUF
                     display = pygame.display.set_mode((WIDTH, HEIGHT), flags)
 
         game.handle_events(events)
         game.update(dt)
         game.draw()
 
-        # Scale render surface to fill display
         dw, dh = display.get_size()
         if dw != WIDTH or dh != HEIGHT:
             scaled = pygame.transform.smoothscale(render_surface, (dw, dh))

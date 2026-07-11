@@ -79,6 +79,8 @@ class TouchButton:
         self.pressed = False
         self.finger_id = None
         self.press_time = 0
+        self._was_pressed = False
+        self._cooldown = 0
 
     def handle_event(self, event):
         if event.type == pygame.FINGERDOWN:
@@ -96,6 +98,12 @@ class TouchButton:
                 self.finger_id = None
                 return True
         return False
+
+    def just_pressed(self):
+        now = self.pressed
+        was = self._was_pressed
+        self._was_pressed = now
+        return now and not was
 
     def is_pressed(self):
         return self.pressed
