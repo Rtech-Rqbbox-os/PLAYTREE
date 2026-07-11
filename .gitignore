@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+build/
+dist/
+*.exe
+*.msix
+*.apk
+*.spec
+.buildozer/
+bin/
+msix/_staging/
+msix/out/
+rhystech_accounts.json
+rhystech_session.json
+*.log
+.claude/
